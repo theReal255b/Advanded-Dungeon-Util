@@ -1,0 +1,7 @@
+{
+  "name": "Advanded Dungeon Utils",
+  "creator": "255b",
+  "description": "Private mod for dungeons made by 255b for boneworks",
+  "version": "1.0.0",
+  "entry": "index.js"
+}
