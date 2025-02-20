@@ -1,8 +1,0 @@
-{
-  "name": "Advanced Dungeon Utils",
-  "creator": "255b",
-  "description": "Module for Advanced Dungeon Utils for the worst of the worst",
-  "entry": "index.js",
-  "version": "1.1.0",
-  "requires": ["RenderLib"]
-}
