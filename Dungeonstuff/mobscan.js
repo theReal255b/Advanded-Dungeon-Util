@@ -6,19 +6,27 @@ register("command", () => {
     ChatLib.chat(`Boss Highlighting is now ${bossHighlightEnabled ? "§aEnabled" : "§cDisabled"}§r.`);
 }).setName("toggleBossHighlight");
 
-witherEntity = Java.type("net.minecraft.entity.boss.EntityWither");
+const witherEntity = Java.type("net.minecraft.entity.boss.EntityWither");
+
+// Helper function to remove Minecraft color codes
+function stripColorCodes(text) {
+    return text.replace(/§[0-9A-FK-OR]/gi, "");
+}
 
 register("renderWorld", () => {
-    if (!bossHighlightEnabled) return; // ✅ Check if highlighting is enabled
+    if (!bossHighlightEnabled) return;
 
     World.getAllEntitiesOfType(witherEntity.class).forEach(entity => {
-        let x = entity.getRenderX();
-        let y = entity.getRenderY();
-        let z = entity.getRenderZ();
-        let rotationYaw = entity.getYaw(); // ✅ Get Wither rotation angle
-
         let name = entity.getName();
-        let color = getWitherColor(name);
+        let cleanName = stripColorCodes(name);
+        let color = getWitherColor(cleanName);
+        if (!color) return; // Skip if the Wither isn't one of the bosses
+
+        // Use actual world coordinates instead of render coordinates
+        let x = entity.getX();
+        let y = entity.getY();
+        let z = entity.getZ();
+        let rotationYaw = entity.getYaw(); // Get Wither rotation angle
 
         let bodyWidth = 1.5;
         let bodyHeight = 2.0;
@@ -28,7 +36,7 @@ register("renderWorld", () => {
         // Convert rotation angle to radians for calculations
         let rad = (-rotationYaw) * (Math.PI / 180);
 
-        // Function to rotate coordinates around Y-axis
+        // Function to rotate coordinates around the Y-axis
         function rotateOffset(xOffset, zOffset) {
             return {
                 x: xOffset * Math.cos(rad) - zOffset * Math.sin(rad),
@@ -44,10 +52,10 @@ register("renderWorld", () => {
         GL11.glColor4f(color[0], color[1], color[2], 1.0);
         Tessellator.begin(3);
 
-        // ✅ Draw main body (torso box)
+        // Draw main body (torso)
         drawWireBox(x, y, z, bodyWidth, bodyHeight, bodyWidth);
 
-        // ✅ Draw three heads (with rotation applied)
+        // Draw three heads (with rotation applied)
         let leftHead = rotateOffset(-1.5, 0);
         let centerHead = rotateOffset(0, 0);
         let rightHead = rotateOffset(1.5, 0);
@@ -55,7 +63,7 @@ register("renderWorld", () => {
         drawWireBox(x + centerHead.x, y + 2.5, z + centerHead.z, headSize, headSize, headSize);
         drawWireBox(x + rightHead.x, y + 2, z + rightHead.z, headSize, headSize, headSize);
 
-        // ✅ Draw ribs (with rotation applied)
+        // Draw ribs (with rotation applied)
         let leftRib = rotateOffset(-ribOffset, 0);
         let rightRib = rotateOffset(ribOffset, 0);
         drawWireBox(x + leftRib.x, y + 1, z + leftRib.z, 0.3, 0.8, 0.3);
@@ -70,36 +78,37 @@ register("renderWorld", () => {
     });
 });
 
-// Function to determine color based on Wither name
+// Returns a custom color for boss withers based on their name (using stripped names).
+// Returns null if the Wither isn't one of the bosses.
 function getWitherColor(name) {
     if (name.includes("Necron")) return [1.0, 0.5, 0.0]; // Orange
-    if (name.includes("Storm")) return [0.0, 0.5, 1.0]; // Blue
-    if (name.includes("Maxor")) return [0.5, 0.0, 1.0]; // Purple
+    if (name.includes("Storm"))  return [0.0, 0.5, 1.0]; // Blue
+    if (name.includes("Maxor"))  return [0.5, 0.0, 1.0]; // Purple
     if (name.includes("Goldor")) return [0.5, 0.5, 0.5]; // Grey
-    return [1.0, 0.0, 0.0]; // Default Red (for normal Withers)
+    return null;
 }
 
-// Helper function to draw a wireframe box
+// Helper function to draw a wireframe box at a given position and size.
 function drawWireBox(x, y, z, width, height, depth) {
     let w = width / 2;
     let h = height / 2;
     let d = depth / 2;
 
-    // Bottom Square
+    // Bottom square
     Tessellator.pos(x - w, y - h, z - d).tex(0, 0);
     Tessellator.pos(x + w, y - h, z - d).tex(0, 0);
     Tessellator.pos(x + w, y - h, z + d).tex(0, 0);
     Tessellator.pos(x - w, y - h, z + d).tex(0, 0);
     Tessellator.pos(x - w, y - h, z - d).tex(0, 0);
 
-    // Top Square
+    // Top square
     Tessellator.pos(x - w, y + h, z - d).tex(0, 0);
     Tessellator.pos(x + w, y + h, z - d).tex(0, 0);
     Tessellator.pos(x + w, y + h, z + d).tex(0, 0);
     Tessellator.pos(x - w, y + h, z + d).tex(0, 0);
     Tessellator.pos(x - w, y + h, z - d).tex(0, 0);
 
-    // Connect top and bottom squares (vertical edges)
+    // Vertical edges connecting top and bottom squares
     Tessellator.pos(x - w, y - h, z - d).tex(0, 0);
     Tessellator.pos(x - w, y + h, z - d).tex(0, 0);
     Tessellator.pos(x + w, y - h, z - d).tex(0, 0);

@@ -1,7 +1,8 @@
 {
-  "name": "Advanded Dungeon Utils",
+  "name": "Advanced Dungeon Utils",
   "creator": "255b",
-  "description": "Private mod for dungeons made by 255b for boneworks",
-  "version": "1.0.0",
-  "entry": "index.js"
+  "description": "Module for Advanced Dungeon Utils for the worst of the worst",
+  "entry": "index.js",
+  "version": "1.1.0",
+  "requires": ["RenderLib"]
 }
