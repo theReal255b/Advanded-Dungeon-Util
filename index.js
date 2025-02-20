@@ -1,4 +1,4 @@
 import "./Terminalstuff/main.js";
+import "./Terminalstuff/bossbar.js";
 import "./Dungeonstuff/pdroutes.js";
-import "./configs/commands.js";
 
